@@ -1,0 +1,66 @@
+plugins {
+  id 'com.gradle.plugin-publish' version '2.2.1'
+}
+
+group = 'com.sneakyrcon'
+version = providers.gradleProperty('releaseVersion').orElse('1.0.0-SNAPSHOT').get()
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(org.gradle.api.tasks.compile.JavaCompile).configureEach {
+  options.release = 17
+}
+
+gradlePlugin {
+  website = 'https://github.com/SneakyRcon/git-versioning'
+  vcsUrl = 'https://github.com/SneakyRcon/git-versioning.git'
+  plugins {
+    gitVersioning {
+      id = 'com.sneakyrcon.gradle.version'
+      implementationClass = 'com.sneakyrcon.gradle.version.GitVersioningPlugin'
+      displayName = 'SneakyRcon Git Versioning'
+      description = 'Sets the project version from release tags and the current Git branch.'
+      tags.set(['versioning', 'git', 'release', 'snapshot'])
+
+      compatibility(it) {
+        features {
+          configurationCache = false
+          isolatedProjects = false
+        }
+      }
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.12.0'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.0'
+}
+
+tasks.withType(Test).configureEach {
+  useJUnitPlatform()
+}
+
+publishing {
+  publications.withType(org.gradle.api.publish.maven.MavenPublication).configureEach {
+    pom {
+      licenses {
+        license {
+          name = 'Apache License, Version 2.0'
+          url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+          distribution = 'repo'
+        }
+      }
+    }
+  }
+}
